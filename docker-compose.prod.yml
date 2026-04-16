@@ -1,6 +1,6 @@
 # Production-style stack: built images + Traefik only. Postgres and S3/MinIO are external.
 # Configure hosts and credentials in `.env` (see `.env.example`).
-# Start: `just up` (uses `--env-file .env` for compose interpolation).
+# Start: `just up` (uses `--env-file .env` and `-p tool_template_prod` for compose interpolation).
 #
 # Frontend: image `target: runner` runs `vite build` at image build time (no bind mounts, no Vite
 # dev/watch). Runtime is `serve` on port 3000. Pass `VITE_API_URL` via `.env` for compose build args.
@@ -65,6 +65,7 @@ services:
       - traefik.http.routers.tool-template-backend-http.entrypoints=web
 
   frontend:
+    image: tool-template-frontend-prod
     restart: unless-stopped
     # Multi-stage Dockerfile: builder = `vite build`; runner = static `dist` + `serve` (not `target: dev`).
     build:

@@ -3,10 +3,16 @@
 # `just up` = production; `just up-dev` = development with local databases.
 # Traefik *container*: `just up` / `just up-dev` = none by default (external Traefik on traefik-public).
 # Bundled Traefik: `just up bundled` / `just up-dev bundled` (--profile bundled-traefik).
+#
+# Dev and prod use different Compose project names (`-p`) so images, volumes, and containers do not
+# overlap. Without this, the production frontend image (runner / non-root user) can replace the dev
+# image and break `npm install` into the dev `node_modules` volume (EACCES).
 
 root := justfile_directory()
 compose_dev := "-f " + root + "/docker-compose.yml -f " + root + "/docker-compose.traefik.yml"
 compose_prod := "-f " + root + "/docker-compose.prod.yml"
+compose_project_dev := "-p tool_template_dev"
+compose_project_prod := "-p tool_template_prod"
 
 [group('help')]
 default:
@@ -33,7 +39,7 @@ up proxy='external': init-env
         exit 1
         ;;
     esac
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} \
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} \
       ${extra[@]+"${extra[@]}"} up -d --build
 
 [group('production')]
@@ -53,7 +59,7 @@ down proxy='external':
         exit 1
         ;;
     esac
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} \
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} \
       ${extra[@]+"${extra[@]}"} down
 
 # Production stack logs (optional service names, e.g. `just logs backend`).
@@ -66,7 +72,7 @@ logs *services:
       exit 1
     fi
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} logs -f {{ services }}
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} logs -f {{ services }}
 
 # Same as `logs` but includes the bundled Traefik `proxy` service.
 [group('production')]
@@ -78,7 +84,7 @@ logs-bundled *services:
       exit 1
     fi
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} \
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} \
       --profile bundled-traefik logs -f {{ services }}
 
 [group('production')]
@@ -90,7 +96,7 @@ ps:
       exit 1
     fi
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} ps
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} ps
 
 # Pull production service images (registry bases; built services may no-op).
 [group('production')]
@@ -102,7 +108,7 @@ pull:
       exit 1
     fi
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} pull
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} pull
 
 # Rebuild production images and recreate containers (no registry pull). Same proxy modes as `just up`.
 [group('production')]
@@ -122,7 +128,7 @@ refresh proxy='external': init-env
         exit 1
         ;;
     esac
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} \
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} \
       ${extra[@]+"${extra[@]}"} up -d --build --force-recreate
 
 # Restart production services (omit names to restart all), e.g. `just restart backend frontend`.
@@ -136,7 +142,7 @@ restart *services:
       exit 1
     fi
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env" {{compose_prod}} restart {{ services }}
+    exec docker compose {{compose_project_prod}} --env-file "{{root}}/.env" {{compose_prod}} restart {{ services }}
 
 # Start development stack. `just up-dev` / `just up-dev external`: no compose Traefik container. `just up-dev bundled`: bundled Traefik when you have no external proxy.
 [group('development')]
@@ -153,7 +159,7 @@ up-dev proxy='external': init-env-dev
         exit 1
         ;;
     esac
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} ${extra[@]+"${extra[@]}"} up -d
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} ${extra[@]+"${extra[@]}"} up -d
 
 # Stop and remove development containers (keeps named volumes).
 [group('development')]
@@ -161,7 +167,7 @@ down-dev:
     #!/usr/bin/env bash
     set -euo pipefail
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} down
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} down
 
 # Follow development service logs; pass service names to limit (e.g. `just logs-dev db`).
 [group('development')]
@@ -169,7 +175,7 @@ logs-dev *services:
     #!/usr/bin/env bash
     set -euo pipefail
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} logs -f {{ services }}
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} logs -f {{ services }}
 
 # Development container status.
 [group('development')]
@@ -177,7 +183,7 @@ ps-dev:
     #!/usr/bin/env bash
     set -euo pipefail
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} ps
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} ps
 
 # Refresh development images.
 [group('development')]
@@ -185,7 +191,7 @@ pull-dev:
     #!/usr/bin/env bash
     set -euo pipefail
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} pull
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} pull
 
 # Rebuild development images and recreate running containers (no registry pull).
 [group('development')]
@@ -193,7 +199,7 @@ refresh-dev: init-env-dev
     #!/usr/bin/env bash
     set -euo pipefail
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} up -d --build --force-recreate
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} up -d --build --force-recreate
 
 # Restart one or more development services (e.g. `just restart-dev backend frontend`).
 [group('development')]
@@ -201,7 +207,7 @@ restart-dev *services:
     #!/usr/bin/env bash
     set -euo pipefail
     eval "$( "{{root}}/scripts/compose-env.sh" )"
-    exec docker compose --env-file "{{root}}/.env.development" {{compose_dev}} restart {{ services }}
+    exec docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" {{compose_dev}} restart {{ services }}
 
 # Regenerate `frontend/src/client` from the OpenAPI spec (Docker; needs Compose DB for backend import).
 [group('backend')]
@@ -216,14 +222,14 @@ create_revision message: init-env-dev
     set -euo pipefail
     cd "{{root}}"
     msg=$(printf %q "$1")
-    docker compose --env-file "{{root}}/.env.development" -f "{{root}}/docker-compose.yml" run --rm \
+    docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" -f "{{root}}/docker-compose.yml" run --rm \
         -v "{{root}}/backend/app:/app/app" \
         backend bash -lc "cd /app && alembic revision --autogenerate -m $msg"
 
 # Apply all pending Alembic migrations (Docker).
 [group('backend')]
 migrate: init-env-dev
-    docker compose --env-file "{{root}}/.env.development" -f "{{root}}/docker-compose.yml" run --rm \
+    docker compose {{compose_project_dev}} --env-file "{{root}}/.env.development" -f "{{root}}/docker-compose.yml" run --rm \
         -v "{{root}}/backend/app:/app/app" \
         backend bash -lc "cd /app && alembic upgrade head"
 
