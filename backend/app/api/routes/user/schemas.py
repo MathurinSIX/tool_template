@@ -1,12 +1,11 @@
 import uuid
 from datetime import datetime
 
-from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
 
 class UserCreate(SQLModel):
-    email: EmailStr
+    username: str = Field(max_length=255)
     password: str | None = None
     full_name: str | None = None
     is_active: bool = True
@@ -14,7 +13,7 @@ class UserCreate(SQLModel):
 
 
 class UserUpdate(SQLModel):
-    email: EmailStr | None = None
+    username: str | None = Field(default=None, max_length=255)
     full_name: str | None = None
 
 

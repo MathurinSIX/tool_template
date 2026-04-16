@@ -2,8 +2,8 @@ import Breadcrumb from "@/components/Breadcrumb"
 import { ProjectLogo } from "@/components/ProjectLogo"
 import SettingMenu from "@/components/SettingMenu"
 import { useColorModeValue } from "@/components/ui/color-mode"
-import { useEffect } from "react"
 import { Link } from "@tanstack/react-router"
+import { useEffect } from "react"
 
 interface HomeLayoutProps {
 	children: React.ReactNode

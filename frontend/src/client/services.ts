@@ -1,137 +1,139 @@
-import type { CancelablePromise } from "./core/CancelablePromise"
-import { OpenAPI } from "./core/OpenAPI"
-import { request as __request } from "./core/request"
+import type { CancelablePromise } from './core/CancelablePromise';
+import { OpenAPI } from './core/OpenAPI';
+import { request as __request } from './core/request';
 
-import type {
-	ExampleWorkflowInput,
-	RefreshTokenRequest,
-	RunCreate,
-	RunOut,
-	RunUpdate,
-	RunsOut,
-	Token,
-	UserCreate,
-	UserOut,
-	UserUpdate,
-	UsersOut,
-} from "./models"
+import type { Body_Login_login_access_token,RefreshTokenRequest,Token,UserCreate,UserOut,UsersOut,UserUpdate,RunCreate,RunOut,RunsOut,RunUpdate,ExampleWorkflowInput } from './models';
 
 export type LoginData = {
-	RefreshToken: {
-		requestBody: RefreshTokenRequest
-	}
-	AccessToken: {
-		username: string
-		password: string
-	}
-}
+        RefreshToken: {
+                    requestBody: RefreshTokenRequest
+                    
+                };
+LoginAccessToken: {
+                    formData: Body_Login_login_access_token
+                    
+                };
+    }
 
 export type UserData = {
-	ReadUserById: {
-		id: string
-	}
-	UpdateUser: {
-		id: string
-		requestBody: UserUpdate
-	}
-	DeleteUser: {
-		id: string
-	}
-	ListUsers: {
-		limit?: number
-		name?: Array<string> | null
-		skip?: number
-	}
-	CreateUser: {
-		requestBody: UserCreate
-	}
-}
+        ReadUserById: {
+                    id: string
+                    
+                };
+UpdateUser: {
+                    id: string
+requestBody: UserUpdate
+                    
+                };
+DeleteUser: {
+                    id: string
+                    
+                };
+ListUsers: {
+                    limit?: number
+name?: Array<string> | null
+skip?: number
+                    
+                };
+CreateUser: {
+                    requestBody: UserCreate
+                    
+                };
+    }
 
 export type RunData = {
-	ReadRunById: {
-		id: string
-	}
-	UpdateRun: {
-		id: string
-		requestBody: RunUpdate
-	}
-	DeleteRun: {
-		id: string
-	}
-	DownloadExportedFileById: {
-		id: string
-	}
-	ListRuns: {
-		deleted?: Array<boolean> | null
-		documentId?: Array<string> | null
-		limit?: number
-		name?: Array<string> | null
-		skip?: number
-		status?: Array<string> | null
-		workflow?: Array<string> | null
-	}
-	CreateRun: {
-		requestBody: RunCreate
-	}
-}
+        ReadRunById: {
+                    id: string
+                    
+                };
+UpdateRun: {
+                    id: string
+requestBody: RunUpdate
+                    
+                };
+DeleteRun: {
+                    id: string
+                    
+                };
+DownloadExportedFileById: {
+                    id: string
+                    
+                };
+ListRuns: {
+                    deleted?: Array<boolean> | null
+documentId?: Array<string> | null
+limit?: number
+name?: Array<string> | null
+skip?: number
+status?: Array<string> | null
+workflow?: Array<string> | null
+                    
+                };
+CreateRun: {
+                    requestBody: RunCreate
+                    
+                };
+    }
 
 export type WorkflowData = {
-	ExampleWorkflow: {
-		requestBody: ExampleWorkflowInput
-	}
-}
+        ExampleWorkflow: {
+                    requestBody: ExampleWorkflowInput
+                    
+                };
+    }
 
-export type UtilsData = {}
+export type UtilsData = {
+        
+    }
 
 export class LoginService {
+
 	/**
 	 * Refresh Token
 	 * Get a new access token and refresh token using a valid refresh token.
 	 * @returns Token Successful Response
 	 * @throws ApiError
 	 */
-	public static refreshToken(
-		data: LoginData["RefreshToken"],
-	): CancelablePromise<Token> {
-		const { requestBody } = data
+	public static refreshToken(data: LoginData['RefreshToken']): CancelablePromise<Token> {
+		const {
+requestBody,
+} = data;
 		return __request(OpenAPI, {
-			method: "POST",
-			url: "/login/refresh",
+			method: 'POST',
+			url: '/login/refresh',
 			body: requestBody,
-			mediaType: "application/json",
+			mediaType: 'application/json',
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
-	 * Login with email and password (OAuth2 password flow: form field ``username`` is email).
+	 * Login Access Token
+	 * OAuth2-compatible login: ``username`` is the account username, ``password`` is their password.
 	 * @returns Token Successful Response
 	 * @throws ApiError
 	 */
-	public static loginAccessToken(
-		data: LoginData["AccessToken"],
-	): CancelablePromise<Token> {
-		const { username, password } = data
-		const body = new URLSearchParams({
-			username,
-			password,
-		})
+	public static loginAccessToken(data: LoginData['LoginAccessToken']): CancelablePromise<Token> {
+		const {
+formData,
+} = data;
 		return __request(OpenAPI, {
-			method: "POST",
-			url: "/login/access-token",
-			body,
-			mediaType: "application/x-www-form-urlencoded",
+			method: 'POST',
+			url: '/login/access-token',
+			formData: formData,
+			mediaType: 'application/x-www-form-urlencoded',
 			errors: {
-				401: "Incorrect email or password",
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
+
 }
 
 export class UserService {
+
 	/**
 	 * Self
 	 * Return current user information.
@@ -139,10 +141,10 @@ export class UserService {
 	 * @throws ApiError
 	 */
 	public static self(): CancelablePromise<UserOut> {
-		return __request(OpenAPI, {
-			method: "GET",
-			url: "/users/self",
-		})
+				return __request(OpenAPI, {
+			method: 'GET',
+			url: '/users/self',
+		});
 	}
 
 	/**
@@ -151,20 +153,20 @@ export class UserService {
 	 * @returns UserOut Successful Response
 	 * @throws ApiError
 	 */
-	public static readUserById(
-		data: UserData["ReadUserById"],
-	): CancelablePromise<UserOut> {
-		const { id } = data
+	public static readUserById(data: UserData['ReadUserById']): CancelablePromise<UserOut> {
+		const {
+id,
+} = data;
 		return __request(OpenAPI, {
-			method: "GET",
-			url: "/users/{id}",
+			method: 'GET',
+			url: '/users/{id}',
 			path: {
-				id,
+				id
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -173,22 +175,23 @@ export class UserService {
 	 * @returns UserOut Successful Response
 	 * @throws ApiError
 	 */
-	public static updateUser(
-		data: UserData["UpdateUser"],
-	): CancelablePromise<UserOut> {
-		const { id, requestBody } = data
+	public static updateUser(data: UserData['UpdateUser']): CancelablePromise<UserOut> {
+		const {
+id,
+requestBody,
+} = data;
 		return __request(OpenAPI, {
-			method: "PATCH",
-			url: "/users/{id}",
+			method: 'PATCH',
+			url: '/users/{id}',
 			path: {
-				id,
+				id
 			},
 			body: requestBody,
-			mediaType: "application/json",
+			mediaType: 'application/json',
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -197,20 +200,20 @@ export class UserService {
 	 * @returns unknown Successful Response
 	 * @throws ApiError
 	 */
-	public static deleteUser(
-		data: UserData["DeleteUser"],
-	): CancelablePromise<unknown> {
-		const { id } = data
+	public static deleteUser(data: UserData['DeleteUser']): CancelablePromise<unknown> {
+		const {
+id,
+} = data;
 		return __request(OpenAPI, {
-			method: "DELETE",
-			url: "/users/{id}",
+			method: 'DELETE',
+			url: '/users/{id}',
 			path: {
-				id,
+				id
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -219,22 +222,22 @@ export class UserService {
 	 * @returns UsersOut Successful Response
 	 * @throws ApiError
 	 */
-	public static listUsers(
-		data: UserData["ListUsers"] = {},
-	): CancelablePromise<UsersOut> {
-		const { name, skip = 0, limit = 100 } = data
+	public static listUsers(data: UserData['ListUsers'] = {}): CancelablePromise<UsersOut> {
+		const {
+name,
+skip = 0,
+limit = 100,
+} = data;
 		return __request(OpenAPI, {
-			method: "GET",
-			url: "/users/",
+			method: 'GET',
+			url: '/users/',
 			query: {
-				name,
-				skip,
-				limit,
+				name, skip, limit
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -243,43 +246,45 @@ export class UserService {
 	 * @returns UserOut Successful Response
 	 * @throws ApiError
 	 */
-	public static createUser(
-		data: UserData["CreateUser"],
-	): CancelablePromise<UserOut> {
-		const { requestBody } = data
+	public static createUser(data: UserData['CreateUser']): CancelablePromise<UserOut> {
+		const {
+requestBody,
+} = data;
 		return __request(OpenAPI, {
-			method: "POST",
-			url: "/users/",
+			method: 'POST',
+			url: '/users/',
 			body: requestBody,
-			mediaType: "application/json",
+			mediaType: 'application/json',
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
+
 }
 
 export class RunService {
+
 	/**
 	 * Read Run By Id
 	 * Get a specific run by id.
 	 * @returns RunOut Successful Response
 	 * @throws ApiError
 	 */
-	public static readRunById(
-		data: RunData["ReadRunById"],
-	): CancelablePromise<RunOut> {
-		const { id } = data
+	public static readRunById(data: RunData['ReadRunById']): CancelablePromise<RunOut> {
+		const {
+id,
+} = data;
 		return __request(OpenAPI, {
-			method: "GET",
-			url: "/run/{id}",
+			method: 'GET',
+			url: '/run/{id}',
 			path: {
-				id,
+				id
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -288,22 +293,23 @@ export class RunService {
 	 * @returns RunOut Successful Response
 	 * @throws ApiError
 	 */
-	public static updateRun(
-		data: RunData["UpdateRun"],
-	): CancelablePromise<RunOut> {
-		const { id, requestBody } = data
+	public static updateRun(data: RunData['UpdateRun']): CancelablePromise<RunOut> {
+		const {
+id,
+requestBody,
+} = data;
 		return __request(OpenAPI, {
-			method: "PATCH",
-			url: "/run/{id}",
+			method: 'PATCH',
+			url: '/run/{id}',
 			path: {
-				id,
+				id
 			},
 			body: requestBody,
-			mediaType: "application/json",
+			mediaType: 'application/json',
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -312,20 +318,20 @@ export class RunService {
 	 * @returns unknown Successful Response
 	 * @throws ApiError
 	 */
-	public static deleteRun(
-		data: RunData["DeleteRun"],
-	): CancelablePromise<unknown> {
-		const { id } = data
+	public static deleteRun(data: RunData['DeleteRun']): CancelablePromise<unknown> {
+		const {
+id,
+} = data;
 		return __request(OpenAPI, {
-			method: "DELETE",
-			url: "/run/{id}",
+			method: 'DELETE',
+			url: '/run/{id}',
 			path: {
-				id,
+				id
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -334,20 +340,20 @@ export class RunService {
 	 * @returns unknown Successful Response
 	 * @throws ApiError
 	 */
-	public static downloadExportedFileById(
-		data: RunData["DownloadExportedFileById"],
-	): CancelablePromise<unknown> {
-		const { id } = data
+	public static downloadExportedFileById(data: RunData['DownloadExportedFileById']): CancelablePromise<unknown> {
+		const {
+id,
+} = data;
 		return __request(OpenAPI, {
-			method: "GET",
-			url: "/run/download_exported_file/{id}",
+			method: 'GET',
+			url: '/run/download_exported_file/{id}',
 			path: {
-				id,
+				id
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -356,34 +362,26 @@ export class RunService {
 	 * @returns RunsOut Successful Response
 	 * @throws ApiError
 	 */
-	public static listRuns(
-		data: RunData["ListRuns"] = {},
-	): CancelablePromise<RunsOut> {
+	public static listRuns(data: RunData['ListRuns'] = {}): CancelablePromise<RunsOut> {
 		const {
-			documentId,
-			workflow,
-			status,
-			deleted,
-			name,
-			skip = 0,
-			limit = 100,
-		} = data
+documentId,
+workflow,
+status,
+deleted,
+name,
+skip = 0,
+limit = 100,
+} = data;
 		return __request(OpenAPI, {
-			method: "GET",
-			url: "/run/",
+			method: 'GET',
+			url: '/run/',
 			query: {
-				document_id: documentId,
-				workflow,
-				status,
-				deleted,
-				name,
-				skip,
-				limit,
+				document_id: documentId, workflow, status, deleted, name, skip, limit
 			},
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
 
 	/**
@@ -392,67 +390,72 @@ export class RunService {
 	 * @returns RunOut Successful Response
 	 * @throws ApiError
 	 */
-	public static createRun(
-		data: RunData["CreateRun"],
-	): CancelablePromise<RunOut> {
-		const { requestBody } = data
+	public static createRun(data: RunData['CreateRun']): CancelablePromise<RunOut> {
+		const {
+requestBody,
+} = data;
 		return __request(OpenAPI, {
-			method: "POST",
-			url: "/run/",
+			method: 'POST',
+			url: '/run/',
 			body: requestBody,
-			mediaType: "application/json",
+			mediaType: 'application/json',
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
+
 }
 
 export class WorkflowService {
+
 	/**
 	 * Example Workflow
 	 * Run an example workflow.
 	 * @returns unknown Successful Response
 	 * @throws ApiError
 	 */
-	public static exampleWorkflow(
-		data: WorkflowData["ExampleWorkflow"],
-	): CancelablePromise<unknown> {
-		const { requestBody } = data
+	public static exampleWorkflow(data: WorkflowData['ExampleWorkflow']): CancelablePromise<unknown> {
+		const {
+requestBody,
+} = data;
 		return __request(OpenAPI, {
-			method: "POST",
-			url: "/workflow/example-workflow",
+			method: 'POST',
+			url: '/workflow/example-workflow',
 			body: requestBody,
-			mediaType: "application/json",
+			mediaType: 'application/json',
 			errors: {
-				422: "Validation Error",
+				422: `Validation Error`,
 			},
-		})
+		});
 	}
+
 }
 
 export class UtilsService {
+
 	/**
 	 * Health Check
-	 * @returns boolean Successful Response
+	 * @returns unknown Successful Response
 	 * @throws ApiError
 	 */
-	public static healthCheck(): CancelablePromise<boolean> {
-		return __request(OpenAPI, {
-			method: "GET",
-			url: "/health",
-		})
+	public static healthCheck(): CancelablePromise<unknown> {
+				return __request(OpenAPI, {
+			method: 'GET',
+			url: '/health',
+		});
 	}
 
 	/**
 	 * Liveness Check
-	 * @returns boolean Successful Response
+	 * @returns unknown Successful Response
 	 * @throws ApiError
 	 */
-	public static livenessCheck(): CancelablePromise<boolean> {
-		return __request(OpenAPI, {
-			method: "GET",
-			url: "/live",
-		})
+	public static livenessCheck(): CancelablePromise<unknown> {
+				return __request(OpenAPI, {
+			method: 'GET',
+			url: '/live',
+		});
 	}
+
 }

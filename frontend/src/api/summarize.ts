@@ -14,7 +14,7 @@ export type Run = {
 	name: string
 	workflow: string
 	status: WorkflowStatus
-	created_by: { id: string; email: string }
+	created_by: { id: string; full_name: string | null }
 	documents: unknown[]
 	params: Record<string, unknown> | null
 	output: Record<string, unknown> | null

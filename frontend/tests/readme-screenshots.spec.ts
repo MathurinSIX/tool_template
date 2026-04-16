@@ -17,8 +17,10 @@ test.describe.configure({ mode: "serial" })
 test("README screenshots", async ({ page, context }) => {
 	await mkdir(screenshotDir, { recursive: true })
 
-	const email =
-		process.env.README_SCREENSHOT_EMAIL?.trim() || "admin@localhost"
+	const username =
+		process.env.README_SCREENSHOT_USERNAME?.trim() ||
+		process.env.README_SCREENSHOT_EMAIL?.trim() ||
+		"admin"
 	const password = process.env.README_SCREENSHOT_PASSWORD?.trim() || "admin"
 
 	await context.clearCookies()
@@ -28,7 +30,7 @@ test("README screenshots", async ({ page, context }) => {
 		sessionStorage.clear()
 	})
 	await page.goto("/login")
-	await expect(page.getByPlaceholder("Email")).toBeVisible()
+	await expect(page.getByPlaceholder("Username")).toBeVisible()
 	await page.screenshot({
 		path: path.join(screenshotDir, "login.png"),
 		fullPage: true,
@@ -41,7 +43,7 @@ test("README screenshots", async ({ page, context }) => {
 				"Content-Type": "application/x-www-form-urlencoded",
 			},
 			data: new URLSearchParams({
-				username: email,
+				username,
 				password,
 			}).toString(),
 		},

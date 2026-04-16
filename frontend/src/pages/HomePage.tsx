@@ -9,9 +9,9 @@ import { UserService } from "@/client/services"
 import { HomeLayout } from "@/components/layouts/HomeLayout"
 import { Button } from "@/components/ui/button"
 import { ensureLoggedIn } from "@/hooks/useAuth"
+import { useNavigate } from "@tanstack/react-router"
 import { useId } from "react"
 import { useCallback, useEffect, useState } from "react"
-import { useNavigate } from "@tanstack/react-router"
 
 const POLL_INTERVAL_MS = 2000
 const ONGOING_STATUSES = ["started", "pending"]
