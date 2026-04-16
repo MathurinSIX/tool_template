@@ -1,34 +1,10 @@
-# My Project
+# FastAPI / Vite Template
 
 Full-stack template with a **FastAPI** backend and a **Vite** + **React** frontend.
 
-## About this template
-
-This repository is a **production-style starter** for building web apps on GitLab: a typed REST API, PostgreSQL with Alembic migrations, Docker Compose for local development (Traefik routing, optional MinIO and Grafana), and a React SPA with TanStack Router and Radix-based UI. The backend follows a small **domain module layout** (models, repository, service, schemas, routes) and uses **repository-level row-level security** hooks so multi-tenant style access rules stay next to the data layer.
-
-The frontend ships with **email and password sign-in**, a shell layout (header, settings, breadcrumbs), and an **example “summarize” workflow**: submit text, the backend records runs and steps, and the home page lists run status and outputs—useful as a pattern for long-running jobs or pipelines. From here you replace branding, routes, and domains with your product while keeping the same deployment and migration workflow.
-
-### Screenshots
-
-Illustrative screenshots of the bundled screens; swap in your own captures from a running dev stack when you have finalized branding.
-
-**Sign-in** — token-based login against the FastAPI `/login` flow.
-
-![Sign-in page](docs/screenshots/login.png)
-
-**Home** — welcome view with the example summarize form and runs table (status badges update while workflows run).
-
-![Home page with example workflow and runs table](docs/screenshots/home.png)
-
----
-
 ## **Table of Contents**
 
-- [**About this template**](#about-this-template)
-  - [Screenshots](#screenshots)
-- [**⚡ Quick Start**](#quick-start)
 - [**⚙️ Project Configuration**](#project-configuration)
-- [**Development vs production-style Compose**](#development-vs-production-style-compose)
 - [**🧱 Technology Stack and Features**](#technology-stack-and-features)
 - [**🚀 Run locally**](#run-locally)
 - [**💻 Local Development**](#local-development)
@@ -39,56 +15,11 @@ Illustrative screenshots of the bundled screens; swap in your own captures from 
 
 ---
 
-## Quick Start
-
-### 1. Fork the project
-
-Fork this template into `bootcamp/projects` folder on GitLab.
-
-### 2. Develop locally
-
-1. Copy `.env.development.example` to `.env.development` (or run `just init-env-dev`).
-2. Run the stack:
-
-   ```bash
-   just up-dev
-   # or: docker compose -f docker-compose.yml -f docker-compose.traefik.yml --env-file .env.development up
-   ```
-
-3. Open the frontend at `http://localhost`, the API docs at `http://backend.localhost/docs`, and Grafana at `http://grafana.localhost/`.
-
-
-For Grafana, the username is `admin` and the password is `admin` in local.
-
-The dashboards are automatically provisioned, **any modification from the UI will be deleted** at the next deployment. Add .json files in grafana/provisioning/dashbaords/' to add/modifiy dashboards.
-
----
-
 ## Project Configuration
 
-**Important:** `.env.development` (local Docker) and `.env` (production-style Docker) contain sensitive data and should **never** be committed.
+**Important:** `.env.development` (local Docker) and `.env` (production-style Docker) contain sensitive data that should **never** be committed.
 
-For **local development**, copy `.env.development.example` to `.env.development` and adjust values (or run `just init-env-dev` to create it if missing).
-
-For **production-style compose** (`just up`), copy `.env.example` to `.env` and set external Postgres, S3, domains, and secrets (or run `just init-env`).
-
----
-
-## Development vs production-style Compose
-
-The repo ships **two Compose setups**. They are not “debug vs release” toggles on one file; they are different compose projects with different services and runtime behavior.
-
-| | **Development** (`just up-dev`) | **Production-style** (`just up`) |
-|--|--|--|
-| **Env file** | `.env.development` (from `.env.development.example`) | `.env` (from `.env.example`) |
-| **Compose files** | `docker-compose.yml` + `docker-compose.traefik.yml` | `docker-compose.prod.yml` |
-| **Database** | **Postgres in Compose** (`db`), with data in a named volume; port published on the host loopback for tools | **External Postgres**; you set `POSTGRES_*` (and similar) in `.env`—no `db` service |
-| **Object storage** | **MinIO in Compose** (`storage` + init), `BUCKET_URL` points at the internal service | **External S3-compatible storage**; URLs and credentials in `.env` |
-| **Extra local services** | **Grafana**, `prestart` (migrations / one-off init before backend), Traefik labels from the dev overlay | **Only app images** (backend + frontend). Optional **bundled Traefik** via `just up bundled` / profile `bundled-traefik`; default expects an **external** `traefik-public` network |
-| **Backend** | Source **bind-mounted** (`./backend:/app`), `uvicorn … --reload`, venv in a volume | Image-only runtime, **no** live reload |
-| **Frontend** | **Vite dev server** (`npm run dev`), source bind-mounted, `NODE_ENV=development` | **`vite build` at image build**, static assets served with **`serve`**, `NODE_ENV=production`, `VITE_API_URL` passed as a **build arg** |
-
-Use **development** for day-to-day work: everything you need (DB, bucket, metrics UI) comes up with the stack. Use **production-style** to smoke-test the same images and routing shape you run behind a real proxy and real managed Postgres/S3, without shipping a database container.
+For **local development**, copy `.env.development.example` to `.env.development` (or run `just init-env-dev`). For **production-style compose** (`just up`), copy `.env.example` to `.env` (or run `just init-env`).
 
 ---
 
@@ -100,7 +31,7 @@ Use **development** for day-to-day work: everything you need (DB, bucket, metric
     - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
     - ⚗️ [Alembic](https://alembic.sqlalchemy.org/en/latest/) for managing database schema changes.
 - 🚀 [Vite](https://vitejs.dev) + [React](https://react.dev) for the frontend.
-    - 🧭 [TanStack Router](https://tanstack.com/router) for file-based routing (`frontend/src/routes`).
+    - 🧭 [TanStack Router](https://tanstack.com/router) for file-based, type-safe routing (`src/routes`).
     - 💃 Using TypeScript and a modern frontend stack.
     - 🎨 [Radix UI](https://www.radix-ui.com/) for the frontend components.
 - 📈 [Grafana](https://grafana.com/) for visualizing logs and metrics.
@@ -124,13 +55,8 @@ The platform is deployed in production on a GCP Kubernetes cluster with GC Stora
 **Commands:**
 
 ```bash
-# Development stack (Traefik + local Postgres + MinIO)
 just up-dev
-
-# Rebuild dev images and recreate containers
 just refresh-dev
-
-# Stop dev stack (keeps volumes)
 just down-dev
 ```
 
