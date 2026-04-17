@@ -80,30 +80,65 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
 };
 
 export const getFormData = (options: ApiRequestOptions): FormData | undefined => {
-	if (options.formData) {
-		const formData = new FormData();
-
-		const process = (key: string, value: unknown) => {
-			if (isString(value) || isBlob(value)) {
-				formData.append(key, value);
-			} else {
-				formData.append(key, JSON.stringify(value));
-			}
-		};
-
-		Object.entries(options.formData)
-			.filter(([, value]) => value !== undefined && value !== null)
-			.forEach(([key, value]) => {
-				if (Array.isArray(value)) {
-					value.forEach(v => process(key, v));
-				} else {
-					process(key, value);
-				}
-			});
-
-		return formData;
+	if (!options.formData) {
+		return undefined;
 	}
-	return undefined;
+	// Multipart FormData must not be paired with application/x-www-form-urlencoded;
+	// use `getUrlSearchParamsBody` for that media type instead.
+	if (options.mediaType === 'application/x-www-form-urlencoded') {
+		return undefined;
+	}
+	const formData = new FormData();
+
+	const process = (key: string, value: unknown) => {
+		if (isString(value) || isBlob(value)) {
+			formData.append(key, value);
+		} else {
+			formData.append(key, JSON.stringify(value));
+		}
+	};
+
+	Object.entries(options.formData)
+		.filter(([, value]) => value !== undefined && value !== null)
+		.forEach(([key, value]) => {
+			if (Array.isArray(value)) {
+				value.forEach(v => process(key, v));
+			} else {
+				process(key, value);
+			}
+		});
+
+	return formData;
+};
+
+/** Plain object form fields as x-www-form-urlencoded (OAuth2 password grant, etc.). */
+export const getUrlSearchParamsBody = (options: ApiRequestOptions): URLSearchParams | undefined => {
+	if (!options.formData || options.mediaType !== 'application/x-www-form-urlencoded') {
+		return undefined;
+	}
+	const params = new URLSearchParams();
+
+	const append = (key: string, value: unknown) => {
+		if (isString(value)) {
+			params.append(key, value);
+		} else if (isBlob(value)) {
+			params.append(key, '');
+		} else {
+			params.append(key, JSON.stringify(value));
+		}
+	};
+
+	Object.entries(options.formData)
+		.filter(([, value]) => value !== undefined && value !== null)
+		.forEach(([key, value]) => {
+			if (Array.isArray(value)) {
+				value.forEach(v => append(key, v));
+			} else {
+				append(key, value);
+			}
+		});
+
+	return params;
 };
 
 type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
@@ -173,8 +208,7 @@ export const sendRequest = async <T>(
 	config: OpenAPIConfig,
 	options: ApiRequestOptions,
 	url: string,
-	body: unknown,
-	formData: FormData | undefined,
+	data: unknown,
 	headers: Record<string, string>,
 	onCancel: OnCancel,
 	axiosClient: AxiosInstance
@@ -182,7 +216,7 @@ export const sendRequest = async <T>(
 	const controller = new AbortController();
 
 	let requestConfig: AxiosRequestConfig = {
-		data: body ?? formData,
+		data,
 		headers,
 		method: options.method,
 		signal: controller.signal,
@@ -303,12 +337,14 @@ export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions, ax
 	return new CancelablePromise(async (resolve, reject, onCancel) => {
 		try {
 			const url = getUrl(config, options);
-			const formData = getFormData(options);
 			const body = getRequestBody(options);
+			const urlSearchParamsBody = getUrlSearchParamsBody(options);
+			const formData = getFormData(options);
+			const requestData = body ?? urlSearchParamsBody ?? formData;
 			const headers = await getHeaders(config, options);
 
 			if (!onCancel.isCancelled) {
-				let response = await sendRequest<T>(config, options, url, body, formData, headers, onCancel, axiosClient);
+				let response = await sendRequest<T>(config, options, url, requestData, headers, onCancel, axiosClient);
 
 				for (const fn of config.interceptors.response._fns) {
 					response = await fn(response)
